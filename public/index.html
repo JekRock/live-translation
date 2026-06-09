@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Translation — Ukrainian → English</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="capture">
+    <header class="topbar">
+      <div class="title">
+        <span class="flag">🇺🇦 → 🇬🇧</span>
+        <h1>Live Translation</h1>
+      </div>
+      <nav class="links">
+        <a class="viewer-link" href="/viewer" target="_blank" rel="noopener">
+          Viewer (English) ↗
+        </a>
+        <a class="viewer-link" href="/source" target="_blank" rel="noopener">
+          Transcript (Ukrainian) ↗
+        </a>
+      </nav>
+    </header>
+
+    <main class="panel">
+      <div class="controls">
+        <button id="toggle" class="btn">Start listening</button>
+        <div class="status">
+          <span id="status-dot" class="dot" data-mode="idle"></span>
+          <span id="status">Idle</span>
+        </div>
+        <button
+          id="audio-toggle"
+          class="audio-btn"
+          type="button"
+          aria-pressed="false"
+          title="Play the translated speech out loud"
+        >
+          <span class="audio-icon">
+            <svg
+              class="icon icon-off"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 9v6h4l5 4V5L8 9H4z" />
+              <path d="M17 9l5 6M22 9l-5 6" />
+            </svg>
+            <svg
+              class="icon icon-on"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 9v6h4l5 4V5L8 9H4z" />
+              <path d="M16 8.5a5 5 0 010 7" />
+              <path d="M18.7 6a9 9 0 010 12" />
+            </svg>
+          </span>
+          <span class="audio-label" data-audio-label>Audio off</span>
+        </button>
+      </div>
+
+      <section class="stage">
+        <div id="transcript" class="transcript" aria-live="polite"></div>
+        <button
+          id="scroll-bottom"
+          class="scroll-bottom-btn"
+          aria-label="Scroll to latest"
+          title="Scroll to latest"
+        >
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path
+              d="M6 9l6 6 6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </section>
+
+      <p class="hint">
+        Press <strong>Start listening</strong>, allow the microphone, and speak
+        Ukrainian. The English translation streams in below — scroll up to read
+        back, and it follows along automatically when you're at the bottom. Open
+        the <a href="/viewer" target="_blank" rel="noopener">viewer</a> on a
+        second screen for full-screen subtitles. Use <strong>Audio</strong> to
+        hear the translation spoken — wear headphones on this page so the mic
+        doesn't pick up the playback.
+      </p>
+    </main>
+
+    <script type="module" src="/js/capture.js"></script>
+  </body>
+</html>

@@ -1,0 +1,361 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --border: #262b36;
+  --text: #e8eaed;
+  --muted: #9aa3b2;
+  --accent: #4f8cff;
+  --accent-2: #2bd4a7;
+  --danger: #ff5c5c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------------ */
+/* Capture page                                                        */
+/* ------------------------------------------------------------------ */
+body.capture {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.flag {
+  font-size: 20px;
+}
+
+.links {
+  display: flex;
+  gap: 10px;
+}
+
+.viewer-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.viewer-link:hover {
+  border-color: var(--accent);
+}
+
+.panel {
+  flex: 1;
+  min-height: 0; /* allow the scroll area to shrink within the flex column */
+  width: min(900px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: none;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform 0.05s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.btn:hover {
+  background: #3d7bff;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Audio toggle (shared between pages) */
+.audio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.audio-btn:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.audio-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.audio-btn.audio-on {
+  color: #fff;
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+.audio-icon {
+  display: inline-flex;
+}
+
+.audio-btn .icon {
+  display: block;
+}
+
+.audio-btn .icon-on {
+  display: none;
+}
+
+.audio-btn.audio-on .icon-off {
+  display: none;
+}
+
+.audio-btn.audio-on .icon-on {
+  display: block;
+}
+
+/* On the capture page the audio toggle sits at the right end of the controls. */
+.controls .audio-btn {
+  margin-left: auto;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+
+.dot[data-mode='idle'] {
+  background: var(--muted);
+}
+.dot[data-mode='connecting'] {
+  background: #e0b341;
+  animation: pulse 1s infinite;
+}
+.dot[data-mode='live'] {
+  background: var(--accent-2);
+  animation: pulse 1.2s infinite;
+}
+.dot[data-mode='error'] {
+  background: var(--danger);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* The scroll stage: a positioned container that holds the scrollable
+   transcript and the floating "scroll to latest" button. */
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 160px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.transcript {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 28px 32px;
+  font-size: clamp(20px, 3vw, 30px);
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.scroll-bottom-btn {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease, background 0.2s ease;
+}
+
+.scroll-bottom-btn:hover {
+  background: #3d7bff;
+}
+
+.scroll-bottom-btn.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.hint {
+  flex: none;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.hint a {
+  color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Viewer page                                                         */
+/* ------------------------------------------------------------------ */
+body.viewer {
+  background: #000;
+}
+
+.viewer-transcript {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  padding: 6vh 7vw;
+  font-size: clamp(30px, 5vw, 64px);
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.9);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.viewer-scroll-btn {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  width: 56px;
+  height: 56px;
+}
+
+.viewer-audio-btn {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 2;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.35;
+  transition: opacity 0.2s ease, color 0.2s ease, background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.viewer-audio-btn:hover {
+  opacity: 1;
+  color: #fff;
+}
+
+.viewer-audio-btn.audio-on {
+  opacity: 1;
+}
+
+.viewer-status {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--danger);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.viewer-status[data-state='connected'] {
+  background: var(--accent-2);
+}
