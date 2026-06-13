@@ -19,4 +19,16 @@ export const config = {
   logFile: process.env.LOG_FILE
     ? resolve(process.env.LOG_FILE)
     : join(__dirname, '..', 'logs', 'app.log'),
+
+  // Optional login for the capture/control page. BOTH must be set (non-empty)
+  // to enable auth; if either is missing, the app stays fully open.
+  authUsername: process.env.AUTH_USERNAME || '',
+  authPassword: process.env.AUTH_PASSWORD || '',
+  // SQLite database that stores login sessions (only used when auth is enabled).
+  dbPath: process.env.DB_PATH
+    ? resolve(process.env.DB_PATH)
+    : join(__dirname, '..', 'data', 'app.db'),
+  // Mark the session cookie Secure. Required behind HTTPS; must stay false on
+  // plain-HTTP localhost or the browser silently drops the cookie.
+  cookieSecure: process.env.COOKIE_SECURE === 'true',
 };
