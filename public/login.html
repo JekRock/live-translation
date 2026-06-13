@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in — Live Translation</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="login">
+    <main class="login-card">
+      <div class="login-title">
+        <span class="flag">🇺🇦 → 🇬🇧</span>
+        <h1>Live Translation</h1>
+      </div>
+      <p class="login-sub">Sign in to start a translation session.</p>
+
+      <form id="login-form" autocomplete="on">
+        <label class="field">
+          <span>Username</span>
+          <input id="username" name="username" type="text" autocomplete="username" required autofocus />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="password" name="password" type="password" autocomplete="current-password" required />
+        </label>
+        <p id="error" class="login-error" role="alert" hidden></p>
+        <button id="submit" class="btn" type="submit">Sign in</button>
+      </form>
+    </main>
+
+    <script type="module" src="/js/login.js"></script>
+  </body>
+</html>

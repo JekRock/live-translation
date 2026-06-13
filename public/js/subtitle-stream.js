@@ -24,7 +24,9 @@ export function connectSubtitleStream({ path, onExtra }) {
   }
 
   function connect() {
-    ws = new WebSocket(wsUrl(path));
+    // Forward the page's query string (e.g. ?token=<uuid>) onto the socket so
+    // the server can authorize the stream when login is enabled.
+    ws = new WebSocket(wsUrl(path + location.search));
 
     ws.onopen = () => {
       if (statusEl) statusEl.dataset.state = 'connected';

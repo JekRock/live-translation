@@ -19,12 +19,18 @@
         <a class="viewer-link" href="/source" target="_blank" rel="noopener">
           Transcript (Ukrainian) ↗
         </a>
+        <button id="logout" class="viewer-link logout-btn" type="button" hidden>
+          Log out
+        </button>
       </nav>
     </header>
 
     <main class="panel">
       <div class="controls">
         <button id="toggle" class="btn">Start listening</button>
+        <button id="takeover" class="btn btn-secondary" type="button" hidden>
+          Take over
+        </button>
         <div class="status">
           <span id="status-dot" class="dot" data-mode="idle"></span>
           <span id="status">Idle</span>

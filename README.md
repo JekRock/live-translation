@@ -89,12 +89,47 @@ All configuration is via environment variables (see `.env.example`):
 | `LOG_FILE`                   | `./logs/app.log` | Single JSON log file, always appended, never rotated.      |
 | `PORT`                       | `3000`       | Local server port.                                              |
 | `HOST`                       | `127.0.0.1`  | Bind address.                                                   |
+| `AUTH_USERNAME`              | _(empty)_    | Username for the optional login. Set with `AUTH_PASSWORD` to enable it. |
+| `AUTH_PASSWORD`              | _(empty)_    | Password for the optional login. Both must be set to enable login. |
+| `DB_PATH`                    | `./data/app.db` | SQLite file storing login sessions (only used when login is on). |
+| `COOKIE_SECURE`             | `false`      | Mark the session cookie `Secure`. Set `true` **only** behind HTTPS. |
 
 The source language (Ukrainian) is **auto-detected** by the model — you only
 specify the target. To translate into another language, change
 `TARGET_LANGUAGE` (e.g. `es`, `de`, `fr`).
 
 `npm run dev` starts the server with `--watch` for auto-reload during edits.
+
+## Optional login
+
+By default the app is **fully open** — anyone who can reach the server can use
+the capture page and the viewer/source pages. To put the capture/control page
+behind a login, set **both** `AUTH_USERNAME` and `AUTH_PASSWORD` in `.env` (if
+either is blank, login stays off).
+
+When login is enabled:
+
+- Visiting `/` redirects to a sign-in page. A successful login issues a
+  **persistent session that lasts ~1 month** via an HTTP-only cookie. Sessions
+  are stored in a local **SQLite** database (`DB_PATH`) using **Drizzle**.
+- The **viewer** and **source** pages become private. They're reachable only via
+  a unique link (`/viewer?token=<uuid>` / `/source?token=<uuid>`) — and the only
+  way to get those links is the **Viewer / Transcript buttons on the main
+  screen**. The token is a UUID generated once per login session (so it's stable
+  for the life of that month-long session).
+- You can be **logged in from several devices at once** with the same
+  credentials. Every logged-in client sees the same live transcript and can
+  **Stop** the session, but **only one client streams audio** to the model at a
+  time. Pressing **Start** (or **Take over** on a client that isn't the current
+  streamer) makes that client the sole streamer.
+
+> **HTTPS note:** the session cookie is sent without the `Secure` flag by default
+> so it works on plain-HTTP `localhost`. If you serve this over HTTPS, set
+> `COOKIE_SECURE=true`.
+>
+> **Native module:** login uses `better-sqlite3`, a native addon. `npm install`
+> normally downloads a prebuilt binary; it is tied to the Node major version, so
+> reinstall (`npm rebuild better-sqlite3`) after upgrading Node.
 
 ## Saved transcripts
 
@@ -138,17 +173,24 @@ translation model emits.
 ```
 live-translation/
 ├── src/
-│   ├── server.js            Fastify server: static files, /ws relay, /ws/viewer + /ws/source broadcast
+│   ├── server.js            Fastify server: static files, auth, /ws relay, /ws/viewer + /ws/source broadcast
 │   ├── openai-translator.js WebSocket client for the OpenAI Realtime Translation API
 │   ├── transcript-store.js  Appends both streams to per-day files on disk
+│   ├── auth.js              Optional login: credential check + session store helpers
+│   ├── db/
+│   │   ├── index.js         SQLite (better-sqlite3) + Drizzle connection
+│   │   └── schema.js        Drizzle `sessions` table
 │   └── config.js            Environment configuration
 ├── public/
 │   ├── index.html           Capture / control page
 │   ├── viewer.html          English subtitles-only viewer
 │   ├── source.html          Original-language transcript viewer
+│   ├── login.html           Sign-in page (when login is enabled)
+│   ├── forbidden.html       Shown for invalid/expired viewer links
 │   ├── css/styles.css
 │   └── js/
-│       ├── capture.js          Mic capture + WebSocket + transcript rendering
+│       ├── capture.js          Control socket + mic capture + transcript rendering
+│       ├── login.js            Sign-in form
 │       ├── viewer.js           Translated stream (+ audio) page
 │       ├── source.js           Original-language stream page
 │       ├── subtitle-stream.js  Shared read-only stream → transcript wiring
@@ -164,7 +206,10 @@ live-translation/
 ## Notes & limitations
 
 - This is a **single-speaker playground**: the server keeps one shared live
-  transcript. Whoever is on the capture page drives every viewer.
+  transcript and a single upstream translation session. Several control screens
+  can be open at once, but only one streams audio — pressing **Start** / **Take
+  over** transfers streaming to that client. Whoever is streaming drives every
+  viewer.
 - Translated **audio** is off by default. Click **Audio** (on either page) to
   hear the translation spoken — the server streams OpenAI's
   `session.output_audio.delta` (24 kHz PCM16) and the browser plays it back

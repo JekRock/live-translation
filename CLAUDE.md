@@ -39,25 +39,48 @@ directly**, so the API key stays server-side.
    - `session.input_transcript.delta` → `onSource` (original Ukrainian)
    - `session.output_audio.delta` → `onAudio` (base64 24 kHz PCM16 speech)
 5. Back in `src/server.js`, those callbacks **fan out**: translation deltas go to
-   the capture socket + `viewers`; source deltas go to `sourceViewers`; audio
-   goes to the capture socket + `viewers`. Every delta is also appended to disk
+   `viewers` + every capture socket; source deltas go to `sourceViewers`; audio
+   goes to the speaker socket + `viewers`. Every delta is also appended to disk
    via **`src/transcript-store.js`**.
 
-### Single shared broadcast
+### Single shared broadcast + single speaker
 
-There is **one** live `state = { translation, source }` for the whole server —
-this is a single-speaker playground. Whoever is on the capture page drives every
-viewer. `/ws/viewer` and `/ws/source` are receive-only mirrors; on connect they
-get a `{type:'sync'}` with the recent tail (capped at `MAX_TRANSCRIPT_CHARS`,
-20 000 chars). Pressing **Start** broadcasts a `reset` to all clients and writes
-a new session marker to disk.
+There is **one** live `state = { translation, source }` and **one** upstream
+`translator` for the whole server — this is a single-speaker playground. The
+`translator`, `speakerSocket`, and `sessionId` are **module-level** in
+`src/server.js` (not per-connection). Several capture/control clients can be
+connected at once (tracked in `captureSockets`); they all mirror the transcript
+and can **Stop**, but only `speakerSocket`'s binary audio is forwarded to the
+model. Pressing **Start** = take over: the existing translator is terminated and
+a new one opened with this socket as the speaker. Every translator callback is
+guarded by `if (mySession !== sessionId) return;` so a just-terminated session's
+async `onClose` can't clobber the session that replaced it (the take-over race).
+`/ws/viewer` and `/ws/source` are receive-only mirrors; on connect they get a
+`{type:'sync'}` with the recent tail (capped at `MAX_TRANSCRIPT_CHARS`, 20 000
+chars). A new capture socket also gets a per-socket `{type:'status'}`.
 
 ### Client message protocol (server → browser, JSON)
 
-`ready` (session configured — capture page then starts the mic), `sync` (full
-tail for a late joiner), `delta` (new text to append), `audio` (base64 PCM16),
-`reset`, `error`, `stopped`. Browser → server: `{type:'start'}`,
-`{type:'stop'}`, and raw binary audio frames.
+`status` (`{running, isSpeaker}` — drives the capture UI's idle / speaker-live /
+other-client-live states), `ready` (session configured — the **speaker** then
+starts its mic), `sync` (full tail for a late joiner), `delta` (new text to
+append), `audio` (base64 PCM16), `reset`, `error`, `stopped`. Browser → server:
+`{type:'start'}` (start or take over), `{type:'stop'}`, and raw binary audio
+frames. The capture page opens its `/ws` control socket **on load** (persistent,
+reconnecting); the mic chain is separate and runs only while it's the speaker.
+
+### Optional login (`src/auth.js`, `src/db/`)
+
+When **both** `AUTH_USERNAME` and `AUTH_PASSWORD` are set, `auth.authEnabled()`
+is true and: `/` requires a valid `session` cookie (else → `/login`); `/viewer`
+& `/source` (and their `/ws/*`) require a valid `?token=<viewerToken>`; `/ws`
+requires the session cookie (checked in a `preValidation` hook — lifecycle hooks
+run on the WS upgrade, so `req.cookies`/`req.query` are populated). Sessions live
+~1 month in SQLite via **Drizzle** (`src/db/schema.js` = `sessions` table;
+`src/db/index.js` opens better-sqlite3 and creates the table with idempotent DDL
+— no drizzle-kit). Each session has a `viewerToken` UUID; the capture page reads
+it from `GET /api/session` to build the viewer links. When auth is off, every
+gate is a no-op and the app behaves exactly as before.
 
 ### Shared frontend modules
 
@@ -84,3 +107,11 @@ autoscroll (pauses following when the user scrolls up); `audio-player.js` /
   `[openai] first event: …` (truncated payload) — the primary tool for inspecting
   what the model emits. Logs go to the console (pretty) and `LOG_FILE` (JSON,
   appended, never rotated).
+- **Login is opt-in and off unless BOTH `AUTH_USERNAME` and `AUTH_PASSWORD` are
+  set.** A half-set config leaves the app open (fail-open by design).
+- The session cookie is **not** `Secure` by default so it works on plain-HTTP
+  `localhost`; set `COOKIE_SECURE=true` behind HTTPS or the browser drops it.
+- `better-sqlite3` is a **native addon** tied to the Node major version — rerun
+  `npm rebuild better-sqlite3` after upgrading Node. The SQLite file lives at
+  `DB_PATH` (default `./data/app.db`; `data/` is git-ignored) and is created on
+  startup even when login is disabled.

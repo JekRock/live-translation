@@ -124,6 +124,25 @@ body.capture {
   cursor: default;
 }
 
+/* Secondary action (e.g. "Take over") — outline rather than filled. */
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--muted);
+}
+
+/* "Log out" reuses .viewer-link styling but is a <button>. */
+.logout-btn {
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+}
+
 .status {
   display: flex;
   align-items: center;
@@ -358,4 +377,84 @@ body.viewer {
 
 .viewer-status[data-state='connected'] {
   background: var(--accent-2);
+}
+
+/* ------------------------------------------------------------------ */
+/* Login / forbidden pages                                             */
+/* ------------------------------------------------------------------ */
+body.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 24px;
+}
+
+.login-card {
+  width: min(380px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.login-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-title h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.login-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 8px 0 24px;
+  line-height: 1.5;
+}
+
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.field input {
+  appearance: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.login-error {
+  color: var(--danger);
+  font-size: 14px;
+  margin: 0;
+}
+
+#login-form .btn {
+  margin-top: 4px;
 }
