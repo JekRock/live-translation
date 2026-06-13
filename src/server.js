@@ -6,6 +6,7 @@ import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
 import fastifyCookie from '@fastify/cookie';
+import gracefulShutdown from 'fastify-graceful-shutdown';
 
 import { config } from './config.js';
 import { connectTranslator } from './openai-translator.js';
@@ -86,6 +87,10 @@ app.log.info(
 await app.register(fastifyCookie);
 await app.register(fastifyWebsocket);
 await app.register(fastifyStatic, { root: PUBLIC_DIR });
+
+// Close the server cleanly on SIGINT/SIGTERM (e.g. Fly autostop) so WebSocket
+// connections close and the Pino file logger flushes before the process exits.
+await app.register(gracefulShutdown);
 
 // ---------------------------------------------------------------------------
 // Auth helpers
